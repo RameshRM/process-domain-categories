@@ -62,16 +62,19 @@ q.drain = function() {
 
 function makeRequest(options, callback) {
   var requestUrl = util.format(baseUrl, options.domain);
-  domainTasks[options.domain].domainCategory = {
-    foo: 'bar'
-  };
-  return callback && callback(undefined, options);
+
   return request.get(requestUrl, function(result) {
-    //   n.send(options.domain);
-    domainTasks[options.domain] = options;
-    return callback && callback(undefined, options);
+
+    var dataParts = [];
+    result.on('data', function(data) {
+      dataParts.push(data.toString());
+    });
+    result.on('end', function(data) {
+      domainTasks[options.domain].domainCategory = dataParts.join('');
+      return callback && callback(undefined, options);
+    });
+
   }).on('error', function(e) {
-    domainTasks[options.domain] = options;
     return callback && callback(undefined, options);
   });
 }
