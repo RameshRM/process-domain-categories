@@ -18,7 +18,17 @@ let domainTasks = {};
 let q = async.queue(function(task, callback) {
   return makeRequest(task, callback);
   task && task.execTask(this, callback);
-}, 20);
+}, 10);
+
+let cargoQueue = async.cargo(function(tasks, callback) {
+
+  async.map(tasks, makeRequest.bind(this), function(err, result) {
+    drain();
+    return callback();
+  });
+}, 10);
+
+// add some items
 var start = Date.now();
 
 readStream.on('data', function onData(dataLines) {
@@ -29,7 +39,7 @@ readStream.on('data', function onData(dataLines) {
         domainCategory: undefined
       };
 
-      q.push({
+      cargoQueue.push({
         domain: domainName
       });
     }
@@ -44,9 +54,9 @@ readStream.on('end', function Complete() {
   process.exit(1);
 });
 
-q.drain = function() {
+function drain() {
   let domainKeys = Object.keys(domainTasks);
-
+  console.log('Start Drain');
   domainKeys.reduce(function reduce(acc, item) {
     if (domainTasks[item].domainCategory) {
       var result = {};
@@ -57,12 +67,12 @@ q.drain = function() {
     }
   }, undefined);
 
-  console.log('Drained', domainKeys.length);
+  console.log('End Drain', domainKeys.length);
 };
 
 function makeRequest(options, callback) {
   var requestUrl = util.format(baseUrl, options.domain);
-
+  console.log(options.domain);
   return request.get(requestUrl, function(result) {
 
     var dataParts = [];
