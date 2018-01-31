@@ -61,7 +61,7 @@ function drain() {
     if (domainTasks[item].domainCategory) {
       var result = {};
       result[item] = domainTasks[item].domainCategory;
-      writer.write(new Buffer(JSON.stringify(result)));
+      writer.write(new Buffer(util.format('%s\n', JSON.stringify(result))));
 
       delete domainTasks[item];
     }
