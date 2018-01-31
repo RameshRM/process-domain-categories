@@ -4,7 +4,7 @@ let async = require('async');
 let util = require('util');
 let fs = require('fs');
 let path = require('path');
-let request = require('https');
+let request = require('superagent');
 let cp = require('child_process');
 let n = cp.fork(__dirname + '/write-result.js');
 let writer = fs.createWriteStream('./fixtures/result.json');
@@ -18,13 +18,13 @@ let domainTasks = {};
 let q = async.queue(function(task, callback) {
   return makeRequest(task, callback);
   task && task.execTask(this, callback);
-}, 10);
+}, 2);
 
 let cargoQueue = async.cargo(function(tasks, callback) {
 
   async.map(tasks, makeRequest.bind(this), function(err, result) {
     drain();
-    return callback();
+    return (callback());
   });
 }, 10);
 
@@ -51,12 +51,13 @@ readStream.on('end', function Complete() {
   writer.end();
   writer.close();
   console.log(util.format('Complete in %s ms', Date.now() - start));
-  process.exit(1);
+  // process.exit(1);
 });
 
 function drain() {
   let domainKeys = Object.keys(domainTasks);
-  console.log('Start Drain');
+  console.log('Start Drain', cargoQueue._tasks.length);
+
   domainKeys.reduce(function reduce(acc, item) {
     if (domainTasks[item].domainCategory) {
       var result = {};
@@ -67,24 +68,24 @@ function drain() {
     }
   }, undefined);
 
-  console.log('End Drain', domainKeys.length);
+  // console.log('End Drain', domainKeys.length);
 };
 
 function makeRequest(options, callback) {
   var requestUrl = util.format(baseUrl, options.domain);
-  console.log(options.domain);
-  return request.get(requestUrl, function(result) {
+  console.log(requestUrl);
 
-    var dataParts = [];
-    result.on('data', function(data) {
-      dataParts.push(data.toString());
-    });
-    result.on('end', function(data) {
-      domainTasks[options.domain].domainCategory = dataParts.join('');
-      return callback && callback(undefined, options);
-    });
+  request.get(requestUrl).timeout({
+    response: 3000
+  }).end(function(err, result) {
+    if (result && result.text) {
+      domainTasks[options.domain].domainCategory = result.text;
+    }
+    if (err) {
+      console.log(err);
+    }
+    return callback(undefined, options);
 
-  }).on('error', function(e) {
-    return callback && callback(undefined, options);
   });
+
 }
