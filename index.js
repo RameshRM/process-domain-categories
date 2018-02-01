@@ -8,7 +8,6 @@ let request = require('superagent');
 let cp = require('child_process');
 let n = cp.fork(__dirname + '/write-result.js');
 let writer = fs.createWriteStream('./fixtures/result.json');
-
 let alexa = './fixtures/alexa-top-1m.csv';
 let readStream = fs.createReadStream(path.join(__dirname, alexa));
 
@@ -24,13 +23,13 @@ let cargoQueue = async.cargo(function(tasks, callback) {
 
   async.map(tasks, makeRequest.bind(this), function(err, result) {
     drain();
-    return (callback());
+    setTimeout(callback,500);
   });
 }, 10);
 
 // add some items
 var start = Date.now();
-
+var canStart=false;
 readStream.on('data', function onData(dataLines) {
   return dataLines && dataLines.toString().split('\n').reduce(function reduce(acc, lineItem) {
     if (!domainTasks[lineItem]) {
@@ -38,22 +37,29 @@ readStream.on('data', function onData(dataLines) {
       domainTasks[domainName] = {
         domainCategory: undefined
       };
+      if(domainName === '' && !canStart){
+        canStart=true;
+      }
 
-      cargoQueue.push({
-        domain: domainName
-      });
+      if(canStart===true){
+        cargoQueue.push({
+          domain: domainName
+        });
+      }
     }
     return acc;
   }, undefined);
 });
 
 readStream.on('end', function Complete() {
-  writer.end();
-  writer.close();
+  //writer.end();
+  //writer.close();
   console.log(util.format('Complete in %s ms', Date.now() - start));
   // process.exit(1);
 });
-
+function writeToFile(input){
+fs.appendFileSync('./fixtures/category-results-2.json', util.format('%s\n', input));
+}
 function drain() {
   let domainKeys = Object.keys(domainTasks);
   console.log('Start Drain', cargoQueue._tasks.length);
@@ -62,7 +68,8 @@ function drain() {
     if (domainTasks[item].domainCategory) {
       var result = {};
       result[item] = domainTasks[item].domainCategory;
-      writer.write(new Buffer(util.format('%s\n', JSON.stringify(result))));
+      // writer.write(new Buffer(util.format('%s\n', JSON.stringify(result))));
+      writeToFile(JSON.stringify(result));
 
       delete domainTasks[item];
     }
