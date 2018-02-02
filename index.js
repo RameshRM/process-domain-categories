@@ -14,22 +14,17 @@ let readStream = fs.createReadStream(path.join(__dirname, alexa));
 let baseUrl = 'https://categorify.org/api?website=%s';
 let domainTasks = {};
 
-let q = async.queue(function(task, callback) {
-  return makeRequest(task, callback);
-  task && task.execTask(this, callback);
-}, 2);
-
 let cargoQueue = async.cargo(function(tasks, callback) {
-
   async.map(tasks, makeRequest.bind(this), function(err, result) {
     drain();
-    setTimeout(callback,500);
+    setTimeout(callback, 2000);
   });
 }, 10);
 
 // add some items
 var start = Date.now();
-var canStart=false;
+var canStart = false;
+var startDomain = 'wespeke.com';
 readStream.on('data', function onData(dataLines) {
   return dataLines && dataLines.toString().split('\n').reduce(function reduce(acc, lineItem) {
     if (!domainTasks[lineItem]) {
@@ -37,11 +32,11 @@ readStream.on('data', function onData(dataLines) {
       domainTasks[domainName] = {
         domainCategory: undefined
       };
-      if(domainName === '' && !canStart){
-        canStart=true;
+      if (domainName === startDomain && !canStart) {
+        canStart = true;
       }
 
-      if(canStart===true){
+      if (canStart === true) {
         cargoQueue.push({
           domain: domainName
         });
@@ -57,9 +52,11 @@ readStream.on('end', function Complete() {
   console.log(util.format('Complete in %s ms', Date.now() - start));
   // process.exit(1);
 });
-function writeToFile(input){
-fs.appendFileSync('./fixtures/category-results-2.json', util.format('%s\n', input));
+
+function writeToFile(input) {
+  fs.appendFileSync('./fixtures/category-results-3.json', util.format('%s\n', input));
 }
+
 function drain() {
   let domainKeys = Object.keys(domainTasks);
   console.log('Start Drain', cargoQueue._tasks.length);
