@@ -24,7 +24,7 @@ let cargoQueue = async.cargo(function(tasks, callback) {
 // add some items
 var start = Date.now();
 var canStart = false;
-var startDomain = 'wespeke.com';
+var startDomain = 'amazingstaff4download.stream';
 readStream.on('data', function onData(dataLines) {
   return dataLines && dataLines.toString().split('\n').reduce(function reduce(acc, lineItem) {
     if (!domainTasks[lineItem]) {
@@ -54,7 +54,7 @@ readStream.on('end', function Complete() {
 });
 
 function writeToFile(input) {
-  fs.appendFileSync('./fixtures/category-results-3.json', util.format('%s\n', input));
+  fs.appendFileSync('./fixtures/category-results-4.json', util.format('%s\n', input));
 }
 
 function drain() {
