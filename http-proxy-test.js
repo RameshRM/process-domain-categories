@@ -3,15 +3,25 @@
 const async = require('async');
 let fs = require('fs');
 let path = require('path');
-let alexa = './fixtures/alexa-top-1m.csv';
+let inputFile = process.argv && process.argv.length === 3 && process.argv[2];
+let util = require('util');
+
+if (!inputFile) {
+  console.error('Input File is required');
+  console.info('Usage: node http-proxy-test alexa-top-1m-bucket-1.csv');
+  return;
+}
+
+let resultFileName = util.format('./category-results/result-%s.json', Date.now());
+let alexa = path.join('./', inputFile);
 let readStream = fs.createReadStream(path.join(__dirname, alexa));
 let domainTasks = {};
 
 var ProxyPool = require('./proxy-pool');
 var proxies = require('./http-proxies');
-var util = require('util');
-var startDomain = 'imagetwist.com';
+var startDomain;
 var canStart = false;
+
 if (!startDomain) {
   canStart = true;
 }
@@ -50,7 +60,7 @@ function doHttp(task, callback) {
   var requestUrl = util.format('https://categorify.org/api?website=%s', task && task.domain);
 
   return proxyReq.get(requestUrl, function(err, resp, body) {
-    console.log(body , err);
+    console.log(body, err);
     if (body) {
       domainTasks[task.domain].domainCategory = body;
     }
@@ -92,7 +102,7 @@ function readDomains(inputStream) {
 
 
 function writeToFile(input) {
-  fs.appendFileSync('./fixtures/categorify-results.json', util.format('%s\n', input));
+  fs.appendFileSync(resultFileName, util.format('%s\n', input));
 }
 
 function retryQueue(domain) {
