@@ -25,7 +25,7 @@ var canStart = false;
 if (!startDomain) {
   canStart = true;
 }
-ProxyPool = new ProxyPool(require('./http-proxies').splice(0, 3));
+ProxyPool = new ProxyPool(require('./http-proxies').splice(0));
 
 let q = async.cargo(function(tasks, callback) {
   async.map(tasks, doHttp.bind(this), function(err, result) {
