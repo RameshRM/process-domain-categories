@@ -8,7 +8,7 @@ const CategorifyReader = require('./read-categorify').Reader;
 
 let inputFile = process.argv && process.argv.length === 3 && process.argv[2];
 
-let startDomain = 'astronomie.de';
+let startDomain = 'guiadacozinha.com.br';
 let canStart = !startDomain ? true : false;
 
 if (cluster.isMaster) {
@@ -97,11 +97,11 @@ function getRandomIdx(max) {
   return Math.floor((Math.random() * max) + 1);
 }
 
-
 function doHttp(task) {
   return function(callback) {
     var request = require('request');
     var activePool = ProxyPool.get();
+
     var proxyReq = request.defaults({
       host: activePool.host,
       port: activePool.port

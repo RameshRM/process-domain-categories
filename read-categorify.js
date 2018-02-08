@@ -57,7 +57,7 @@ function doHttp(task) {
   return function(callback) {
 
     var request = require('request');
-    var activePool = ProxyPool.getRandom();
+    var activePool = ProxyPool.get();
     var proxyReq = request.defaults({
       host: activePool.host,
       port: activePool.port
@@ -69,6 +69,7 @@ function doHttp(task) {
       proxy: activePool
     }, function(err, result) {
       if (err) {
+        ProxyPool.markBusy(activePool);
         retryQueue(task.domain);
       }
       domainTasks[task.domain].domainCategory = result;

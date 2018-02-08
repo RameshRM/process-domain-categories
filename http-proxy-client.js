@@ -34,6 +34,9 @@ module.exports.execute = function(options, callback) {
     res.on('end', function() {
       return callback(undefined, dataParts.join(''));
     });
-    
+
+  }).on('error', function(e) {
+    console.log(e);
+    return callback(e);
   });
 };
