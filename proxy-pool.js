@@ -18,6 +18,28 @@ ProxyPool.prototype.get = function() {
   return this.activePool;
 };
 
+ProxyPool.prototype.getNext = function() {
+  
+  if (!this.activePool) {
+    this.availablePools = this.availablePools.concat(this.busyPools);
+    this.activePool = this.availablePools.shift();
+  }
+  this.busyPools.push(this.activePool);
+  return this.activePool;
+};
+
+ProxyPool.prototype.getRandom = function() {
+  var randomNumber = randomInt(0, this.availablePools.length);
+
+  return this.availablePools[randomNumber];
+
+  if (!this.activePool) {
+    this.availablePools = this.availablePools.concat(this.busyPools);
+    this.activePool = this.availablePools.shift();
+  }
+  return this.activePool;
+};
+
 ProxyPool.prototype.markBusy = function(busyPool) {
 
   if (busyPool) {
@@ -26,3 +48,7 @@ ProxyPool.prototype.markBusy = function(busyPool) {
   this.activePool = undefined;
   return this.activePool;
 };
+
+function randomInt(low, high) {
+  return Math.floor(Math.random() * (high - low) + low);
+}

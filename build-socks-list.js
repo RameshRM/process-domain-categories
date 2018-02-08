@@ -1,7 +1,7 @@
 'use strict';
 
 var fs = require('fs');
-var socksList = fs.readFileSync('./socks.list').toString().split('\n');
+var socksList = fs.readFileSync('./http-proxies-list.txt').toString().split('\n');
 
 socksList = socksList.map(function map(sock) {
   var sockEntry = sock.substring(0, sock.indexOf('#'));
@@ -12,4 +12,4 @@ socksList = socksList.map(function map(sock) {
 });
 
 
-fs.writeFileSync('socks-list.json', JSON.stringify(socksList.slice(0)));
+fs.writeFileSync('http-proxies-2.json', JSON.stringify(socksList.slice(0)));

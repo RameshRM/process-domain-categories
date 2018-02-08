@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.6.0",
+    "https-proxy-agent": "^2.1.1",
     "request": "^2.83.0",
     "socks5-https-client": "^1.2.1",
     "superagent": "^3.8.2",

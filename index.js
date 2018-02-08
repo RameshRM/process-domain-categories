@@ -16,15 +16,16 @@ let domainTasks = {};
 var shttps = require('socks5-https-client');
 
 var Agent = require('socks5-https-client/lib/Agent');
-var requestFn = require('request');
 
+var requestFn = require('request');
+// curl -x socks5h://98.174.87.168:36218 https://categorify.org/api?website=taobao.com
 return requestFn({
-  url: 'https://categorify.org/',
+  url: 'https://categorify.org/api?website=taobao.com',
   strictSSL: true,
   agentClass: Agent,
   agentOptions: {
-    socksHost: '103.90.200.2',
-    socksPort: 35618
+    socksHost: '98.174.87.168',
+    socksPort: 36218
   }
 }, function(err, res) {
   console.log('Fooo');

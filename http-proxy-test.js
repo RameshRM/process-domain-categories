@@ -19,7 +19,7 @@ let domainTasks = {};
 
 var ProxyPool = require('./proxy-pool');
 var proxies = require('./http-proxies');
-var startDomain;
+var startDomain = 'wildtextures.com';
 var canStart = false;
 
 if (!startDomain) {
@@ -28,11 +28,11 @@ if (!startDomain) {
 ProxyPool = new ProxyPool(require('./http-proxies').splice(0));
 
 let q = async.cargo(function(tasks, callback) {
-  async.map(tasks, doHttp.bind(this), function(err, result) {
+  async.parallel(tasks, function(err, result) {
     drain();
-    setTimeout(callback, 1000);
+    setTimeout(callback, 200);
   });
-}, 10);
+}, 5);
 
 function drain() {
   console.log('Drain');
@@ -49,30 +49,33 @@ function drain() {
 
 readDomains(readStream);
 
-function doHttp(task, callback) {
-  var request = require('request');
-  var activePool = ProxyPool.get();
-  var proxyReq = request.defaults({
-    host: activePool.host,
-    port: activePool.port
-  });
-  console.log(activePool.host, activePool.port);
-  var requestUrl = util.format('https://categorify.org/api?website=%s', task && task.domain);
+function doHttp(task) {
+  return function(callback) {
+    var request = require('request');
+    var activePool = ProxyPool.get();
+    var proxyReq = request.defaults({
+      host: activePool.host,
+      port: activePool.port
+    });
+    console.log(activePool.host, activePool.port);
+    var requestUrl = util.format('https://categorify.org/api?website=%s', task && task.domain);
 
-  return proxyReq.get(requestUrl, function(err, resp, body) {
-    console.log(body, err);
-    if (body) {
-      domainTasks[task.domain].domainCategory = body;
-    }
+    return proxyReq.get(requestUrl, function(err, resp, body) {
+      console.log(body, err);
+      if (body) {
+        domainTasks[task.domain].domainCategory = body;
+      }
 
-    if (err) {
-      console.log(err, activePool.host, activePool.port);
-      ProxyPool.markBusy(activePool);
-      retryQueue(task.domain);
-    }
+      if (err) {
+        console.log(err, activePool.host, activePool.port);
+        ProxyPool.markBusy(activePool);
+        retryQueue(task.domain);
+      }
 
-    return callback();
-  });
+      return callback();
+    });
+
+  };
 }
 
 function readDomains(inputStream) {
@@ -89,9 +92,9 @@ function readDomains(inputStream) {
           domainTasks[domainName] = {
             domainCategory: undefined
           };
-          q.push({
+          q.push(doHttp({
             domain: domainName
-          });
+          }));
 
         }
       }

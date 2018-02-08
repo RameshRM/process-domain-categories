@@ -1,1 +1,21 @@
-var _0x49f8=['log','Foo\x20'];(function(_0x52a79d,_0x5199e2){var _0x50e3ab=function(_0x6b8e2){while(--_0x6b8e2){_0x52a79d['push'](_0x52a79d['shift']());}};_0x50e3ab(++_0x5199e2);}(_0x49f8,0xb4));var _0x3752=function(_0x4ec940,_0x307b50){_0x4ec940=_0x4ec940-0x0;var _0x45086f=_0x49f8[_0x4ec940];return _0x45086f;};'use strict';console[_0x3752('0x0')](_0x3752('0x1'));
+var url = require('url');
+var https = require('https');
+var HttpsProxyAgent = require('https-proxy-agent');
+
+// HTTP/HTTPS proxy to connect to
+var proxy = 'http://118.33.129.88:808';
+console.log('using proxy server %j', proxy);
+
+// HTTPS endpoint for the proxy to connect to
+var endpoint = process.argv[2] || 'https://categorify.org';
+console.log('attempting to GET %j', endpoint);
+var options = url.parse(endpoint);
+
+// create an instance of the `HttpsProxyAgent` class with the proxy server information
+var agent = new HttpsProxyAgent(proxy);
+options.agent = agent;
+options.secureProxy = true;
+https.get(options, function(res) {
+  console.log('"response" event!', res.headers);
+  res.pipe(process.stdout);
+});
