@@ -19,12 +19,16 @@ module.exports.execute = function(options, callback) {
 
   httpOpts.agent = agent;
   httpOpts.secureProxy = true;
-
+  var hasCallBack = false;
   https.get(httpOpts, function(res) {
     var dataParts = [];
 
     res.on('error', function(error) {
-      return callback(error);
+      if (!hasCallBack) {
+        hasCallBack = true;
+        return callback(error);
+      }
+
     });
 
     res.on('data', function(data) {
@@ -37,6 +41,9 @@ module.exports.execute = function(options, callback) {
 
   }).on('error', function(e) {
     console.log(e);
-    return callback(e);
+    if (!hasCallBack) {
+      hasCallBack = true;
+      return callback(e);
+    }
   });
 };
