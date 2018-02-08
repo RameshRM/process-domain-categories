@@ -2,6 +2,8 @@
 
 const async = require('async');
 const util = require('util');
+const fs = require('fs');
+
 const ProxyPoolFn = require('./proxy-pool');
 const MAX_TIMEOUT = 10000;
 
