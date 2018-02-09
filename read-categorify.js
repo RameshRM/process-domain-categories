@@ -18,7 +18,7 @@ module.exports.Reader = Reader;
 
 function Reader() {
   q = async.cargo(function(tasks, callback) {
-    async.parallel(tasks, function(err, result) {
+    async.parallelLimit(tasks, 10, function(err, result) {
       drain();
       setTimeout(callback, 200);
     });

@@ -8,7 +8,7 @@ const CategorifyReader = require('./read-categorify').Reader;
 
 let inputFile = process.argv && process.argv.length === 3 && process.argv[2];
 
-let startDomain = 'guiadacozinha.com.br';
+let startDomain = 'lezec.cz';
 let canStart = !startDomain ? true : false;
 
 if (cluster.isMaster) {
