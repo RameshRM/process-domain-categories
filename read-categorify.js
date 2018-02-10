@@ -7,7 +7,7 @@ const fs = require('fs');
 const ProxyPoolFn = require('./proxy-pool');
 const MAX_TIMEOUT = 10000;
 
-let resultFileName = util.format('./category-results/result-%s.json', Date.now());
+let resultFileName = util.format('./category-results/bucket2/result-%s.json', Date.now());
 let ProxyPool = new ProxyPoolFn(require('./http-proxies').splice(0));
 let q;
 let domainTasks = {};
@@ -39,6 +39,9 @@ Reader.prototype.read = function read(inputDomains) {
 };
 
 function drain() {
+  if (!domainTasks) {
+    return;
+  }
   let domainKeys = Object.keys(domainTasks);
   console.log('Drain Completed Tasks ', domainKeys.length);
 
@@ -55,7 +58,9 @@ function drain() {
 
 function doHttp(task) {
   return function(callback) {
-
+    if (!task || !task.domain || !domainTasks[task.domain]) {
+      return callback();
+    }
     var request = require('request');
     var activePool = ProxyPool.get();
     var proxyReq = request.defaults({
@@ -73,6 +78,7 @@ function doHttp(task) {
         retryQueue(task.domain);
       }
       domainTasks[task.domain].domainCategory = result;
+
       return callback();
     });
 
